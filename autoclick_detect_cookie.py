@@ -47,11 +47,11 @@ if __name__ == '__main__':
     
     THRESHOLD_MATCHING = 5
     
-    PATTERN_MASK = np.array(Image.open('goldCookie.png').convert('RGBA'), dtype=np.int32)
+    PATTERN_MASK = np.array(Image.open('data/goldCookie.png').convert('RGBA'), dtype=np.int32)
     MASK = PATTERN_MASK[:,:,3:] > 0
     PATTERN = PATTERN_MASK[:,:,:3] * MASK
     
-    PATTERN_MASK_2 = np.array(Image.open('wrathCookie.png').convert('RGBA'), dtype=np.int32)
+    PATTERN_MASK_2 = np.array(Image.open('data/wrathCookie.png').convert('RGBA'), dtype=np.int32)
     MASK_2 = PATTERN_MASK_2[:,:,3:] > 0
     PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
     
