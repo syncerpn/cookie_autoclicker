@@ -22,15 +22,16 @@ def periodic_observe_and_react(period, flags,
     while not flags[flag_destroy]:
         time_curr = time.time()
         if time_curr - time_prev >= period:
+            t = time.time()
             if flags[flag_observe]:
-                return_data = callback_observe(*args_observe)
+                # return_data = callback_observe(*args_observe)
+                return_data = set()
                 
-            if flags[flag_react]:
-                
+            if flags[flag_react]:                
                 mutex.acquire()
                 callback_react(return_data, *args_react)
                 mutex.release()
-        
+            print('took %.3f' % (time.time() - t))
             time_prev = time_curr
 
 def detect_golden_cookie(pattern, half_window=True):
@@ -59,7 +60,6 @@ def detect_golden_cookie(pattern, half_window=True):
     return candidates
 
 def click_cookie(candidates, wait=1):
-    print(candidates)
     for candidate in candidates:
         gcy, gcx = candidate
         mc.position = (gcx, gcy)
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
     
     WAIT = 0.0001
-    GOLDEN_COOKIE_LOOKING_PERIOD = 1
+    GOLDEN_COOKIE_LOOKING_PERIOD = 3
     
     mc = mouse.Controller()
     kc = keyboard.Controller()
@@ -149,12 +149,10 @@ if __name__ == '__main__':
         
         while(not flags['quit']):
             if flags['auto']:
-                mutex.acquire()
                 mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
                 time.sleep(WAIT)
                 mc.click(mouse.Button.left, 1)
                 time.sleep(WAIT)
-                mutex.release()
         
         thread_detect_golden_cookie.join()
         thread_detect_wrath_cookie.join()
