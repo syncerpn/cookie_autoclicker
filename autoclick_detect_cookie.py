@@ -56,7 +56,7 @@ if __name__ == '__main__':
     PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
     
     WAIT = 0.0001
-    GOLDEN_COOKIE_LOOKING_PERIOD = 1
+    GOLDEN_COOKIE_LOOKING_PERIOD = 3
     
     mc = mouse.Controller()
     kc = keyboard.Controller()
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         global flag_detect_golden_cookie
         global flag_detect_wrath_cookie
         
-        if key == keyboard.Key.scroll_lock:
+        if key == keyboard.Key.f1:
             flag_auto = not flag_auto
             flag_detect_golden_cookie = flag_auto and flag_detect_golden_cookie
             flag_detect_wrath_cookie = flag_auto and flag_detect_wrath_cookie
@@ -81,11 +81,11 @@ if __name__ == '__main__':
             print('[INFO] golden cookie detection %s' % ('on' if flag_detect_golden_cookie else 'off'))
             print('[INFO] wrath cookie detection %s' % ('on' if flag_detect_wrath_cookie else 'off'))
         
-        elif key == keyboard.Key.pause and flag_auto:
+        elif key == keyboard.Key.f2 and flag_auto:
             flag_detect_golden_cookie = not flag_detect_golden_cookie
             print('[INFO] golden cookie detection %s' % ('on' if flag_detect_golden_cookie else 'off'))
             
-        elif key == keyboard.Key.page_up and flag_auto:
+        elif key == keyboard.Key.f3 and flag_auto:
             flag_detect_wrath_cookie = not flag_detect_wrath_cookie
             print('[INFO] wrath cookie detection %s' % ('on' if flag_detect_wrath_cookie else 'off'))
     
@@ -101,6 +101,8 @@ if __name__ == '__main__':
     # Collect events until released
     time_prev_golden = time.time()
     time_prev_wrath = time.time()
+    speed_divider_golden_cookie = 1
+    speed_divider_wrath_cookie = 1
     
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         while(not flag_quit):
@@ -109,12 +111,13 @@ if __name__ == '__main__':
                 candidates = None
                 
                 if flag_detect_golden_cookie:
-                    if time_curr - time_prev_golden >= GOLDEN_COOKIE_LOOKING_PERIOD:
+                    if time_curr - time_prev_golden >= GOLDEN_COOKIE_LOOKING_PERIOD / speed_divider_golden_cookie:
                         time_prev_golden = time_curr
                         query = pyautogui.screenshot()
                         candidates = detect_golden_cookie(query, PATTERN)
                     
                     if candidates:
+                        speed_divider_golden_cookie = GOLDEN_COOKIE_LOOKING_PERIOD * len(candidates)
                         print('[INFO] golden found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -122,17 +125,20 @@ if __name__ == '__main__':
                             time.sleep(WAIT)
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
+                    else:
+                        speed_divider_golden_cookie = 1
                           
                 time_curr = time.time()
                 candidates = None
                 
                 if flag_detect_wrath_cookie:
-                    if time_curr - time_prev_wrath >= GOLDEN_COOKIE_LOOKING_PERIOD:
+                    if time_curr - time_prev_wrath >= GOLDEN_COOKIE_LOOKING_PERIOD / speed_divider_wrath_cookie:
                         time_prev_wrath = time_curr
                         query = pyautogui.screenshot()
                         candidates = detect_golden_cookie(query, PATTERN_2)
                     
                     if candidates:
+                        speed_divider_wrath_cookie = GOLDEN_COOKIE_LOOKING_PERIOD * len(candidates)
                         print('[INFO] wrath found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -140,6 +146,8 @@ if __name__ == '__main__':
                             time.sleep(WAIT)
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
+                    else:
+                        speed_divider_wrath_cookie = 1
                         
                 mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
                 time.sleep(WAIT)
