@@ -56,7 +56,7 @@ if __name__ == '__main__':
     PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
     
     WAIT = 0.0001
-    GOLDEN_COOKIE_LOOKING_PERIOD = 3
+    MAX_LOOKING_PERIOD = 3
     
     mc = mouse.Controller()
     kc = keyboard.Controller()
@@ -65,21 +65,25 @@ if __name__ == '__main__':
     flag_quit = False
     flag_detect_golden_cookie = True
     flag_detect_wrath_cookie = True
+    flag_fix_mouse_pos_big_cookie = True
     
     def on_press(key):
         global flag_auto
         global flag_quit
         global flag_detect_golden_cookie
         global flag_detect_wrath_cookie
+        global flag_fix_mouse_pos_big_cookie
         
         if key == keyboard.Key.f1:
             flag_auto = not flag_auto
             flag_detect_golden_cookie = flag_auto and flag_detect_golden_cookie
             flag_detect_wrath_cookie = flag_auto and flag_detect_wrath_cookie
+            flag_fix_mouse_pos_big_cookie = flag_auto
             
             print('[INFO] auto-click %s' % ('on' if flag_auto else 'off'))
             print('[INFO] golden cookie detection %s' % ('on' if flag_detect_golden_cookie else 'off'))
             print('[INFO] wrath cookie detection %s' % ('on' if flag_detect_wrath_cookie else 'off'))
+            print('[INFO] fix mouse position %s' % ('on' if flag_fix_mouse_pos_big_cookie else 'off'))
         
         elif key == keyboard.Key.f2 and flag_auto:
             flag_detect_golden_cookie = not flag_detect_golden_cookie
@@ -88,6 +92,10 @@ if __name__ == '__main__':
         elif key == keyboard.Key.f3 and flag_auto:
             flag_detect_wrath_cookie = not flag_detect_wrath_cookie
             print('[INFO] wrath cookie detection %s' % ('on' if flag_detect_wrath_cookie else 'off'))
+            
+        elif key == keyboard.Key.f4 and flag_auto:
+            flag_fix_mouse_pos_big_cookie = not flag_fix_mouse_pos_big_cookie
+            print('[INFO] fix mouse position %s' % ('on' if flag_fix_mouse_pos_big_cookie else 'off'))
     
     def on_release(key):
         global flag_auto
@@ -104,20 +112,23 @@ if __name__ == '__main__':
     speed_divider_golden_cookie = 1
     speed_divider_wrath_cookie = 1
     
+    looking_golden_cookie = 1
+    looking_wrath_cookie = 1
+    
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        while(not flag_quit):
+        while not flag_quit:
             if flag_auto:
                 time_curr = time.time()
                 candidates = None
                 
                 if flag_detect_golden_cookie:
-                    if time_curr - time_prev_golden >= GOLDEN_COOKIE_LOOKING_PERIOD / speed_divider_golden_cookie:
+                    if time_curr - time_prev_golden >= looking_golden_cookie:
                         time_prev_golden = time_curr
                         query = pyautogui.screenshot()
                         candidates = detect_golden_cookie(query, PATTERN)
                     
                     if candidates:
-                        speed_divider_golden_cookie = GOLDEN_COOKIE_LOOKING_PERIOD * len(candidates)
+                        looking_golden_cookie = 1.0 / len(candidates)
                         print('[INFO] golden found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -126,19 +137,19 @@ if __name__ == '__main__':
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
                     else:
-                        speed_divider_golden_cookie = 1
+                        looking_golden_cookie = min(looking_golden_cookie + 0.4, MAX_LOOKING_PERIOD)
                           
                 time_curr = time.time()
                 candidates = None
                 
                 if flag_detect_wrath_cookie:
-                    if time_curr - time_prev_wrath >= GOLDEN_COOKIE_LOOKING_PERIOD / speed_divider_wrath_cookie:
+                    if time_curr - time_prev_wrath >= looking_wrath_cookie:
                         time_prev_wrath = time_curr
                         query = pyautogui.screenshot()
                         candidates = detect_golden_cookie(query, PATTERN_2)
                     
                     if candidates:
-                        speed_divider_wrath_cookie = GOLDEN_COOKIE_LOOKING_PERIOD * len(candidates)
+                        looking_wrath_cookie = 1.0 / len(candidates)
                         print('[INFO] wrath found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -147,10 +158,11 @@ if __name__ == '__main__':
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
                     else:
-                        speed_divider_wrath_cookie = 1
-                        
-                mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
-                time.sleep(WAIT)
+                        looking_wrath_cookie = min(looking_wrath_cookie + 0.4, MAX_LOOKING_PERIOD)
+                
+                if flag_fix_mouse_pos_big_cookie:
+                    mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
+                    time.sleep(WAIT)
                 mc.click(mouse.Button.left, 1)
                 time.sleep(WAIT)
             
