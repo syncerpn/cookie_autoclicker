@@ -11,15 +11,18 @@ from PIL import Image
 import numpy as np
 import pyautogui
 from threading import Thread, Lock
+from multiprocessing import Process
 
-mutex = Lock()
+# mutex = Lock()
 
 def periodic_observe_and_react(period, flags,
                                callback_observe, args_observe, flag_observe,
                                callback_react, args_react, flag_react,
                                flag_destroy):
     time_prev = time.time()
+    print('func: ', id(flags))
     while not flags[flag_destroy]:
+        break
         time_curr = time.time()
         if time_curr - time_prev >= period:
             t = time.time()
@@ -28,9 +31,9 @@ def periodic_observe_and_react(period, flags,
                 return_data = set()
                 
             if flags[flag_react]:                
-                mutex.acquire()
+                # mutex.acquire()
                 callback_react(return_data, *args_react)
-                mutex.release()
+                # mutex.release()
             print('took %.3f' % (time.time() - t))
             time_prev = time_curr
 
@@ -100,13 +103,14 @@ if __name__ == '__main__':
         'detect_wrath_cookie': True,
         }
     
+    print('main: ', id(flags))
     candidates_golden_cookie = None
     candidates_wrath_cookie = None
     
     def on_press(key):
         global flags
         
-        if key == keyboard.Key.scroll_lock:
+        if key == keyboard.Key.f1:
             flags['auto'] = not flags['auto']
             flags['detect_golden_cookie'] = flags['auto'] and flags['detect_golden_cookie']
             flags['detect_wrath_cookie'] = flags['auto'] and flags['detect_wrath_cookie']
@@ -115,11 +119,11 @@ if __name__ == '__main__':
             print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
             print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
         
-        elif key == keyboard.Key.pause and flags['auto']:
+        elif key == keyboard.Key.f2 and flags['auto']:
             flags['detect_golden_cookie'] = not flags['detect_golden_cookie']
             print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
             
-        elif key == keyboard.Key.page_up and flags['auto']:
+        elif key == keyboard.Key.f3 and flags['auto']:
             flags['detect_wrath_cookie'] = not flags['detect_wrath_cookie']
             print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
     
