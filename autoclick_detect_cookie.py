@@ -128,7 +128,7 @@ if __name__ == '__main__':
                         candidates = detect_golden_cookie(query, PATTERN)
                     
                     if candidates:
-                        looking_golden_cookie = 0.4 / len(candidates)
+                        looking_golden_cookie = 0.7 / len(candidates)
                         print('[INFO] golden found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -136,6 +136,7 @@ if __name__ == '__main__':
                             time.sleep(WAIT)
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
+                        time.sleep(WAIT) #to avoid duplicate
                     else:
                         looking_golden_cookie = min(looking_golden_cookie + 0.3, MAX_LOOKING_PERIOD)
                           
@@ -149,7 +150,7 @@ if __name__ == '__main__':
                         candidates = detect_golden_cookie(query, PATTERN_2)
                     
                     if candidates:
-                        looking_wrath_cookie = 0.4 / len(candidates)
+                        looking_wrath_cookie = 0.7 / len(candidates)
                         print('[INFO] wrath found %d' % len(candidates))
                         for candidate in candidates:
                             gcy, gcx = candidate
@@ -157,6 +158,7 @@ if __name__ == '__main__':
                             time.sleep(WAIT)
                             mc.click(mouse.Button.left, 1)
                             time.sleep(WAIT)
+                        time.sleep(WAIT) #to avoid duplicate
                     else:
                         looking_wrath_cookie = min(looking_wrath_cookie + 0.3, MAX_LOOKING_PERIOD)
                 
