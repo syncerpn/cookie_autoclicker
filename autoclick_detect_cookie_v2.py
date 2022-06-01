@@ -10,30 +10,51 @@ import time
 from PIL import Image
 import numpy as np
 import pyautogui
-from threading import Thread, Lock
-from multiprocessing import Process
+# from threading import Thread, Lock
+from multiprocessing import Process, Manager, Lock
 
-# mutex = Lock()
+mutex = Lock()
+mc = mouse.Controller()
+kc = keyboard.Controller()
+
+PH = 96
+PW = 96
+    
+PSXS = list(range(30,51,20))
+PSYS = list(range(30,51,20))
+
+BIG_COOKIE_Y = 430
+BIG_COOKIE_X = 144
+
+THRESHOLD_MATCHING = 5
+
+PATTERN_MASK = np.array(Image.open('data/goldCookie.png').convert('RGBA'), dtype=np.int32)
+MASK = PATTERN_MASK[:,:,3:] > 0
+PATTERN = PATTERN_MASK[:,:,:3] * MASK
+
+PATTERN_MASK_2 = np.array(Image.open('data/wrathCookie.png').convert('RGBA'), dtype=np.int32)
+MASK_2 = PATTERN_MASK_2[:,:,3:] > 0
+PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
+
+WAIT = 0.0001
+GOLDEN_COOKIE_LOOKING_PERIOD = 0.1
 
 def periodic_observe_and_react(period, flags,
                                callback_observe, args_observe, flag_observe,
                                callback_react, args_react, flag_react,
                                flag_destroy):
     time_prev = time.time()
-    print('func: ', id(flags))
     while not flags[flag_destroy]:
-        break
         time_curr = time.time()
         if time_curr - time_prev >= period:
             t = time.time()
             if flags[flag_observe]:
-                # return_data = callback_observe(*args_observe)
-                return_data = set()
+                return_data = callback_observe(*args_observe)
                 
-            if flags[flag_react]:                
-                # mutex.acquire()
+            if flags[flag_react]:
+                mutex.acquire()
                 callback_react(return_data, *args_react)
-                # mutex.release()
+                mutex.release()
             print('took %.3f' % (time.time() - t))
             time_prev = time_curr
 
@@ -70,94 +91,74 @@ def click_cookie(candidates, wait=1):
         mc.click(mouse.Button.left, 1)
         time.sleep(wait)
     
+    
+def on_press(key):
+    global flags
+    
+    if key == keyboard.Key.f1:
+        flags['auto'] = not flags['auto']
+        flags['detect_golden_cookie'] = flags['auto'] and flags['detect_golden_cookie']
+        flags['detect_wrath_cookie'] = flags['auto'] and flags['detect_wrath_cookie']
+        
+        print('[INFO] auto-click %s' % ('on' if flags['auto'] else 'off'))
+        print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
+        print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
+    
+    elif key == keyboard.Key.f2 and flags['auto']:
+        flags['detect_golden_cookie'] = not flags['detect_golden_cookie']
+        print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
+        
+    elif key == keyboard.Key.f3 and flags['auto']:
+        flags['detect_wrath_cookie'] = not flags['detect_wrath_cookie']
+        print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
+
+def on_release(key):
+    global flags
+    if key == keyboard.Key.esc and not flags['auto']:
+        # Stop listener
+        print('[INFO] exit')
+        flags['quit'] = True
+        return False
+
 if __name__ == '__main__':
-    PH = 96
-    PW = 96
+
+    with Manager() as manager:
+
+        flags = manager.dict({
+            'auto': False,
+            'quit': False,
+            'detect_golden_cookie': True,
+            'detect_wrath_cookie': True,
+            })
         
-    PSXS = list(range(30,51,20))
-    PSYS = list(range(30,51,20))
-    
-    BIG_COOKIE_Y = 430
-    BIG_COOKIE_X = 144
-    
-    THRESHOLD_MATCHING = 5
-    
-    PATTERN_MASK = np.array(Image.open('data/goldCookie.png').convert('RGBA'), dtype=np.int32)
-    MASK = PATTERN_MASK[:,:,3:] > 0
-    PATTERN = PATTERN_MASK[:,:,:3] * MASK
-    
-    PATTERN_MASK_2 = np.array(Image.open('data/wrathCookie.png').convert('RGBA'), dtype=np.int32)
-    MASK_2 = PATTERN_MASK_2[:,:,3:] > 0
-    PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
-    
-    WAIT = 0.0001
-    GOLDEN_COOKIE_LOOKING_PERIOD = 3
-    
-    mc = mouse.Controller()
-    kc = keyboard.Controller()
-    
-    flags = {
-        'auto': False,
-        'quit': False,
-        'detect_golden_cookie': True,
-        'detect_wrath_cookie': True,
-        }
-    
-    print('main: ', id(flags))
-    candidates_golden_cookie = None
-    candidates_wrath_cookie = None
-    
-    def on_press(key):
-        global flags
-        
-        if key == keyboard.Key.f1:
-            flags['auto'] = not flags['auto']
-            flags['detect_golden_cookie'] = flags['auto'] and flags['detect_golden_cookie']
-            flags['detect_wrath_cookie'] = flags['auto'] and flags['detect_wrath_cookie']
+        candidates_golden_cookie = None
+        candidates_wrath_cookie = None
             
-            print('[INFO] auto-click %s' % ('on' if flags['auto'] else 'off'))
-            print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
-            print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
-        
-        elif key == keyboard.Key.f2 and flags['auto']:
-            flags['detect_golden_cookie'] = not flags['detect_golden_cookie']
-            print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
+        with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+            thread_detect_golden_cookie = Process(target=periodic_observe_and_react,
+                                                  args=(GOLDEN_COOKIE_LOOKING_PERIOD, flags,
+                                                        detect_golden_cookie, (PATTERN,), 'detect_golden_cookie',
+                                                        click_cookie, (WAIT,), 'detect_golden_cookie',
+                                                        'quit'))
             
-        elif key == keyboard.Key.f3 and flags['auto']:
-            flags['detect_wrath_cookie'] = not flags['detect_wrath_cookie']
-            print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
-    
-    def on_release(key):
-        global flags
-        if key == keyboard.Key.esc and not flags['auto']:
-            # Stop listener
-            print('[INFO] exit')
-            flags['quit'] = True
-            return False
-        
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        thread_detect_golden_cookie = Thread(target=periodic_observe_and_react,
-                                              args=(GOLDEN_COOKIE_LOOKING_PERIOD, flags,
-                                                    detect_golden_cookie, (PATTERN,), 'detect_golden_cookie',
-                                                    click_cookie, (WAIT,), 'detect_golden_cookie',
-                                                    'quit'))
-        
-        thread_detect_wrath_cookie = Thread(target=periodic_observe_and_react,
-                                              args=(GOLDEN_COOKIE_LOOKING_PERIOD, flags,
-                                                    detect_golden_cookie, (PATTERN_2,), 'detect_wrath_cookie',
-                                                    click_cookie, (WAIT,), 'detect_wrath_cookie',
-                                                    'quit'))
-        
-        thread_detect_golden_cookie.start()
-        thread_detect_wrath_cookie.start()
-        
-        while(not flags['quit']):
-            if flags['auto']:
-                mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
-                time.sleep(WAIT)
-                mc.click(mouse.Button.left, 1)
-                time.sleep(WAIT)
-        
-        thread_detect_golden_cookie.join()
-        thread_detect_wrath_cookie.join()
-        listener.join()
+            thread_detect_wrath_cookie = Process(target=periodic_observe_and_react,
+                                                  args=(GOLDEN_COOKIE_LOOKING_PERIOD, flags,
+                                                        detect_golden_cookie, (PATTERN_2,), 'detect_wrath_cookie',
+                                                        click_cookie, (WAIT,), 'detect_wrath_cookie',
+                                                        'quit'))
+            
+            thread_detect_golden_cookie.start()
+            thread_detect_wrath_cookie.start()
+            
+            while(not flags['quit']):
+                if flags['auto']:
+                    mutex.acquire()
+                    mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
+                    time.sleep(WAIT)
+                    mc.click(mouse.Button.left, 1)
+                    time.sleep(WAIT)
+                    mutex.release()
+            
+            thread_detect_golden_cookie.join()
+            thread_detect_wrath_cookie.join()
+            listener.join()
