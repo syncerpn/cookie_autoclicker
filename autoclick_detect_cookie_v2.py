@@ -52,9 +52,8 @@ def periodic_observe_and_react(period, flags,
                 return_data = callback_observe(*args_observe)
                 
             if flags[flag_react]:
-                mutex.acquire()
                 callback_react(return_data, *args_react)
-                mutex.release()
+                
             print('took %.3f' % (time.time() - t))
             time_prev = time_curr
 
@@ -84,12 +83,15 @@ def detect_golden_cookie(pattern, half_window=True):
     return candidates
 
 def click_cookie(candidates, wait=1):
+    mutex.acquire()
     for candidate in candidates:
         gcy, gcx = candidate
         mc.position = (gcx, gcy)
         time.sleep(wait)
         mc.click(mouse.Button.left, 1)
         time.sleep(wait)
+    
+    mutex.release()
     
     
 def on_press(key):
