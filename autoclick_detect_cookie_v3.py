@@ -101,6 +101,7 @@ def on_press(key):
         
         print('[INFO] auto-click %s' % ('on' if flags['auto'] else 'off'))
         print('[INFO] fixed mouse pos %s' % ('on' if flags['fixed_pos'] else 'off'))
+        print('[INFO] detect popup off')
     
     elif key == keyboard.Key.f2 and flags['auto']:
         change_list = ['golden_cookie']
@@ -113,6 +114,12 @@ def on_press(key):
         
     elif key == keyboard.Key.f6 and flags['auto']:
         change_list = ['wrath_bunny_0', 'wrath_bunny_1', 'wrath_bunny_2', 'wrath_bunny_3']
+        
+    elif key == keyboard.Key.f7 and flags['auto']:
+        change_list = ['heart_0', 'heart_1', 'heart_2', 'heart_3', 'heart_4', 'heart_5', 'heart_6', 'heart_7']
+        
+    elif key == keyboard.Key.f8 and flags['auto']:
+        change_list = ['spooky_cookie']
         
     elif key == keyboard.Key.f3 and flags['auto']:
         flags['fixed_pos'] = not flags['fixed_pos']
@@ -225,6 +232,51 @@ if __name__ == '__main__':
                 'wrath_bunny_3': {
                     'pattern': np.array(Image.open('data/bunnies.png').convert('RGB'), dtype=np.int32)[96:192,288:384,:],
                     'anchors':[(24,35), (43,30), (49,53), (69,57)],
+                    },
+        
+                'heart_0': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,0:96,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_1': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*1:96*2,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_2': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*2:96*3,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_3': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*3:96*4,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_4': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*4:96*5,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_5': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*5:96*6,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_6': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*6:96*7,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'heart_7': {
+                    'pattern': np.array(Image.open('data/hearts.png').convert('RGB'), dtype=np.int32)[0:96,96*7:96*8,:],
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'spooky_cookie': {
+                    'pattern': np.array(Image.open('data/spookyCookie.png').convert('RGB'), dtype=np.int32),
+                    'anchors':[(30,30), (30,60), (60,30), (60,60)],
                     },
         
         }
