@@ -23,8 +23,14 @@ PW = 96
 PSXS = list(range(30,51,20))
 PSYS = list(range(30,51,20))
 
-BIG_COOKIE_Y = 430
-BIG_COOKIE_X = 144
+# BIG_COOKIE_Y = 430
+# BIG_COOKIE_X = 144
+
+BIG_COOKIE_Y = 740
+BIG_COOKIE_X = 110
+
+OFFSET_Y = 480
+OFFSET_X = 0
 
 THRESHOLD_MATCHING = 5
 
@@ -39,7 +45,7 @@ MASK_2 = PATTERN_MASK_2[:,:,3:] > 0
 PATTERN_2 = PATTERN_MASK_2[:,:,:3] * MASK_2
 
 WAIT = 0.0001
-GOLDEN_COOKIE_LOOKING_PERIOD = 0.1
+GOLDEN_COOKIE_LOOKING_PERIOD = 0.2
 
 def periodic_observe_and_react(period, flags,
                                callback_observe, args_observe, flag_observe,
@@ -63,7 +69,8 @@ def detect_golden_cookie(pattern, half_window=True):
     #gonna return list of center points of candidates
     query = np.array(pyautogui.screenshot(), dtype=np.int32)
     if half_window:
-        query = query[:,:query.shape[1]//2,:]
+        # query = query[:,:query.shape[1]//2,:]
+        query = query[OFFSET_Y:,OFFSET_X:960,:]
     candidates = None
     
     for psx in PSXS:
@@ -88,7 +95,7 @@ def click_cookie(candidates, wait=1):
     mutex.acquire()
     for candidate in candidates:
         gcy, gcx = candidate
-        mc.position = (gcx, gcy)
+        mc.position = (OFFSET_X + gcx, OFFSET_Y + gcy)
         time.sleep(wait)
         mc.click(mouse.Button.left, 1)
         time.sleep(wait)
@@ -103,10 +110,12 @@ def on_press(key):
         flags['auto'] = not flags['auto']
         flags['detect_golden_cookie'] = flags['auto'] and flags['detect_golden_cookie']
         flags['detect_wrath_cookie'] = flags['auto'] and flags['detect_wrath_cookie']
+        flags['fixed_pos'] = flags['auto']
         
         print('[INFO] auto-click %s' % ('on' if flags['auto'] else 'off'))
         print('[INFO] golden cookie detection %s' % ('on' if flags['detect_golden_cookie'] else 'off'))
         print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
+        print('[INFO] fixed_pos %s' % ('on' if flags['fixed_pos'] else 'off'))
     
     elif key == keyboard.Key.f2 and flags['auto']:
         flags['detect_golden_cookie'] = not flags['detect_golden_cookie']
@@ -115,6 +124,10 @@ def on_press(key):
     elif key == keyboard.Key.f3 and flags['auto']:
         flags['detect_wrath_cookie'] = not flags['detect_wrath_cookie']
         print('[INFO] wrath cookie detection %s' % ('on' if flags['detect_wrath_cookie'] else 'off'))
+
+    elif key == keyboard.Key.f4 and flags['auto']:
+        flags['fixed_pos'] = not flags['fixed_pos']
+        print('[INFO] fixed_pos %s' % ('on' if flags['fixed_pos'] else 'off'))
 
 def on_release(key):
     global flags
@@ -133,6 +146,7 @@ if __name__ == '__main__':
             'quit': False,
             'detect_golden_cookie': True,
             'detect_wrath_cookie': True,
+            'fixed_pos': True,
             })
         
         candidates_golden_cookie = None
@@ -157,8 +171,9 @@ if __name__ == '__main__':
             while(not flags['quit']):
                 if flags['auto']:
                     mutex.acquire()
-                    mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
-                    time.sleep(WAIT)
+                    if flags['fixed_pos']:
+                        mc.position = (BIG_COOKIE_X, BIG_COOKIE_Y)
+                        time.sleep(WAIT)
                     mc.click(mouse.Button.left, 1)
                     time.sleep(WAIT)
                     mutex.release()
