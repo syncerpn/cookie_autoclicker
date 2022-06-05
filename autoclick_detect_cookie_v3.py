@@ -104,10 +104,10 @@ def on_press(key):
         print('[INFO] detect popup off')
     
     elif key == keyboard.Key.f2 and flags['auto']:
-        change_list = ['golden_cookie']
+        change_list = ['golden_cookie', 'contract']
         
     elif key == keyboard.Key.f4 and flags['auto']:
-        change_list = ['wrath_cookie']
+        change_list = ['wrath_cookie', 'wrath_contract']
         
     elif key == keyboard.Key.f5 and flags['auto']:
         change_list = ['bunny_0', 'bunny_1', 'bunny_2', 'bunny_3']
