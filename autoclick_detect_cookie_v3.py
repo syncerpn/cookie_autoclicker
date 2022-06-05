@@ -283,7 +283,7 @@ if __name__ == '__main__':
         
                 'fortune_cookie': {
                     'pattern': np.array(Image.open('data/fortune_icon.png').convert('RGB'), dtype=np.int32),
-                    'anchors':[(3,4), (9,6), (7,13), (15,10)],
+                    'anchors':[(3,4), (9,6), (7,13), (15,10), (4,13), (10,18), (15,19)],
                     },
         
         }
