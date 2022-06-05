@@ -17,7 +17,7 @@ mutex = Lock()
 mc = mouse.Controller()
 kc = keyboard.Controller()
 
-GAME_WINDOW_TITLE_SUFFIX = ' - Cookie Clicker'
+GAME_WINDOW_TITLE_SUFFIX = ' - Cookie Baker'
 THRESHOLD_MATCHING = 5
 GOLDEN_COOKIE_LOOKING_PERIOD = 0.4
 
