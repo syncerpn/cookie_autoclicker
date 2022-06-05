@@ -16,7 +16,7 @@ mutex = Lock()
 mc = mouse.Controller()
 kc = keyboard.Controller()
 
-GAME_WINDOW_TITLE_SUFFICES = [' - Cookie Clicker', ' - Cookie Baker']
+GAME_WINDOW_TITLE_SUFFICES = [' - Cookie Clicker', ' - Cookie Baker', '(RGB/8#)']
 THRESHOLD_MATCHING = 5
 GOLDEN_COOKIE_LOOKING_PERIOD = 0.4
 
@@ -120,6 +120,9 @@ def on_press(key):
     elif key == keyboard.Key.f8 and flags['auto']:
         change_list = ['spooky_cookie']
         
+    elif key == keyboard.Key.f9 and flags['auto']:
+        change_list = ['fortune_cookie']
+        
     elif key == keyboard.Key.f3 and flags['auto']:
         flags['fixed_pos'] = not flags['fixed_pos']
         print('[INFO] fixed mouse pos %s' % ('on' if flags['fixed_pos'] else 'off'))
@@ -154,7 +157,7 @@ def lookup_window(hwnd, position, suffices=GAME_WINDOW_TITLE_SUFFICES):
             h = rect[3] - y
             
             position.append((x,y,w,h))
-            win32gui.SetForegroundWindow(hwnd)
+            # win32gui.SetForegroundWindow(hwnd)
             return
 
 if __name__ == '__main__':
@@ -276,6 +279,11 @@ if __name__ == '__main__':
                 'spooky_cookie': {
                     'pattern': np.array(Image.open('data/spookyCookie.png').convert('RGB'), dtype=np.int32),
                     'anchors':[(30,30), (30,60), (60,30), (60,60)],
+                    },
+        
+                'fortune_cookie': {
+                    'pattern': np.array(Image.open('data/fortune_icon.png').convert('RGB'), dtype=np.int32),
+                    'anchors':[(3,4), (9,6), (7,13), (15,10)],
                     },
         
         }
