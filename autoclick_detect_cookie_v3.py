@@ -10,14 +10,13 @@ from pynput import mouse, keyboard
 import time
 from PIL import Image
 import numpy as np
-import matplotlib.pyplot as plt
 from multiprocessing import Process, Manager, Lock
 
 mutex = Lock()
 mc = mouse.Controller()
 kc = keyboard.Controller()
 
-GAME_WINDOW_TITLE_SUFFIX = ' - Cookie Baker'
+GAME_WINDOW_TITLE_SUFFICES = [' - Cookie Clicker', ' - Cookie Baker']
 THRESHOLD_MATCHING = 5
 GOLDEN_COOKIE_LOOKING_PERIOD = 0.4
 
@@ -145,18 +144,18 @@ def on_release(key):
         flags['quit'] = True
         return False
     
-def lookup_window(hwnd, position, suffix=GAME_WINDOW_TITLE_SUFFIX):
-    if not win32gui.GetWindowText(hwnd).endswith(suffix):
-        return
-        
-    rect = win32gui.GetWindowRect(hwnd)
-    x = rect[0]
-    y = rect[1]
-    w = rect[2] - x
-    h = rect[3] - y
-    
-    position.append((x,y,w,h))
-    win32gui.SetForegroundWindow(hwnd)
+def lookup_window(hwnd, position, suffices=GAME_WINDOW_TITLE_SUFFICES):
+    for suffix in suffices:
+        if win32gui.GetWindowText(hwnd).endswith(suffix):
+            rect = win32gui.GetWindowRect(hwnd)
+            x = rect[0]
+            y = rect[1]
+            w = rect[2] - x
+            h = rect[3] - y
+            
+            position.append((x,y,w,h))
+            win32gui.SetForegroundWindow(hwnd)
+            return
 
 if __name__ == '__main__':
     #lookup
