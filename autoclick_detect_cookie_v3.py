@@ -23,7 +23,7 @@ GOLDEN_COOKIE_LOOKING_PERIOD = 0.4
 DICT_PATTERN = 'pattern'
 DICT_ANCHORS = 'anchors'
 
-WAIT = 0.0001
+WAIT = 1/200
 
 def periodic_observe_and_react(period, flags, flag_destroy,
                                callback_observe, args_observe,
