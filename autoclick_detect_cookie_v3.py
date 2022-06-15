@@ -141,7 +141,8 @@ def on_press(key):
 
 def on_release(key):
     global flags
-    if key == keyboard.Key.esc and not flags['auto']:
+    # if key == keyboard.Key.esc and not flags['auto']:
+    if key == keyboard.Key.esc:
         # Stop listener
         print('[INFO] exit')
         flags['quit'] = True
